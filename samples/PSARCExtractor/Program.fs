@@ -7,26 +7,6 @@ open Rocksmith2014.XML
 open DLCBuilder.Utils
 open DLCBuilder.GeneralTypes
 
-type Platform = PC | Mac
-
-type LevelCountGeneration =
-    | Simple
-    | MLModel
-    /// Generates the same number of levels for all phrases. For testing purposes.
-    | Constant of levelCount: int
-//
-// type AudioConversionType =
-//     | ToWav
-//     | ToOgg
-
-type Locale =
-    { Name: string
-      ShortName: string }
-
-type AppId =
-    | AppId of uint64
-
-
 type Configuration =
     {
       RemoveDDOnImport: bool
@@ -34,15 +14,11 @@ type Configuration =
       ConvertAudio: AudioConversionType option
     }
 
+let rec getAllFiles dir pattern =
+    seq { yield! Directory.EnumerateFiles(dir, pattern)
+          for d in Directory.EnumerateDirectories(dir) do
+              yield! getAllFiles d pattern }
 
-// let rec getAllFiles dir pattern =
-//     seq { yield! Directory.EnumerateFiles(dir, pattern)
-//           for d in Directory.EnumerateDirectories(dir) do
-//               yield! getAllFiles d pattern }
-//
-// getAllFiles "Downloads" "*.psarc"
-// |> Seq.iter (printfn "%s")
-/// Removes DD from the arrangements.
 
 let progress = fun () -> printfn "Progress"
 
@@ -95,13 +71,18 @@ let importPsarc config targetFolder (psarcPath: string)  =
         return { r with GeneratedProject = project }
     }
 
+let config = {
+    RemoveDDOnImport = true
+    CreateEOFProjectOnImport = false
+    ConvertAudio = Some ToOgg
+}
+
+let processFile filename =
+    let directory = Path.Combine(Path.GetDirectoryName(filename:string),Path.GetFileNameWithoutExtension(filename:string))
+    printfn $"%s{directory}"
+    importPsarc config directory filename |> Async.RunSynchronously |> ignore
 
 [<EntryPoint>]
 let main argv =
-    let config = {
-        RemoveDDOnImport = true
-        CreateEOFProjectOnImport = false
-        ConvertAudio = Some ToOgg
-    }
-    importPsarc config "C:\\Users\\ritwi\\Github\\Testing\\" "C:\\Users\\ritwi\\Github\\Rocksmith\\Downloads\\73718\\PleaseComeHomeForChristmas_AChristmasCelebrationOfHope.psarc" |> Async.RunSynchronously |> ignore
-    Console.Read()
+    getAllFiles "Downloads" "*.psarc" |> Seq.iter processFile
+    0
