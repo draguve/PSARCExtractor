@@ -28,14 +28,6 @@ let importPsarc config targetFolder (psarcPath: string)  =
         let! r = PsarcImporter.import progress psarcPath targetFolder
         let project = r.GeneratedProject
 
-        let audioExtension =
-            match config.ConvertAudio with
-            | None ->
-                "wem"
-            | Some conv ->
-                convertProjectAudioFromWem conv project
-                conv.ToExtension
-
         // Remove DD levels
         if config.RemoveDDOnImport then
             let instrumentalData =
@@ -49,6 +41,13 @@ let importPsarc config targetFolder (psarcPath: string)  =
 
             do! removeDD instrumentalData
 
+        let audioExtension =
+            match config.ConvertAudio with
+            | None ->
+                "wem"
+            | Some conv ->
+                convertProjectAudioFromWem conv project
+                conv.ToExtension
         let audioFilePath = Path.ChangeExtension(project.AudioFile.Path, audioExtension)
         let previewFilePath = Path.ChangeExtension(project.AudioPreviewFile.Path, audioExtension)
         let oggFileName =
@@ -74,14 +73,17 @@ let importPsarc config targetFolder (psarcPath: string)  =
 let config = {
     RemoveDDOnImport = true
     CreateEOFProjectOnImport = false
-    ConvertAudio = Some ToOgg
+    ConvertAudio = None
 }
 
 let processFile filename =
-    let directory = Path.Combine(Path.GetDirectoryName(filename:string),Path.GetFileNameWithoutExtension(filename:string))
-    printfn $"%s{directory}"
-    importPsarc config directory filename |> Async.RunSynchronously |> ignore
-
+   try
+       let directory = Path.Combine(Path.GetDirectoryName(filename:string),Path.GetFileNameWithoutExtension(filename:string))
+       printfn $"%s{directory}"
+       importPsarc config directory filename |> Async.RunSynchronously |> ignore
+       File.Delete(filename)
+   with ex ->
+       printfn $"Problem could not decompress %s{filename}"
 [<EntryPoint>]
 let main argv =
     getAllFiles "Downloads" "*.psarc" |> Seq.iter processFile
