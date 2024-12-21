@@ -1,4 +1,4 @@
-﻿open System
+open System
 open System.IO
 open Microsoft.VisualBasic
 open Rocksmith2014.DLCProject
@@ -13,12 +13,6 @@ type Configuration =
       CreateEOFProjectOnImport: bool
       ConvertAudio: AudioConversionType option
     }
-
-let rec getAllFiles dir pattern =
-    seq { yield! Directory.EnumerateFiles(dir, pattern)
-          for d in Directory.EnumerateDirectories(dir) do
-              yield! getAllFiles d pattern }
-
 
 let progress = fun () -> printfn "Progress"
 
@@ -57,12 +51,6 @@ let importPsarc config targetFolder (psarcPath: string)  =
             | _ ->
                 String.Empty
 
-        // Create EOF project
-        // if config.CreateEOFProjectOnImport then
-        //     let eofProjectPath = Path.Combine(Path.GetDirectoryName(r.ProjectPath), "notes.eof")
-        //     let eofTracks = createEofTrackList r.ArrangementData
-        //     EOFProjectWriter.writeEofProject oggFileName eofProjectPath eofTracks
-
         let audioFile = { project.AudioFile with Path = audioFilePath }
         let previewFile = { project.AudioPreviewFile with Path = previewFilePath }
         let project = { project with AudioFile = audioFile; AudioPreviewFile = previewFile }
@@ -76,15 +64,23 @@ let config = {
     ConvertAudio = None
 }
 
-let processFile filename =
+let processFile filename outputDir =
    try
-       let directory = Path.Combine(Path.GetDirectoryName(filename:string),Path.GetFileNameWithoutExtension(filename:string))
+       let directory = outputDir
        printfn $"%s{directory}"
        importPsarc config directory filename |> Async.RunSynchronously |> ignore
        File.Delete(filename)
    with ex ->
        printfn $"Problem could not decompress %s{filename}"
+
 [<EntryPoint>]
 let main argv =
-    getAllFiles "Downloads" "*.psarc" |> Seq.iter processFile
-    0
+    // Expecting two arguments: input file path and output directory
+    if argv.Length < 2 then
+        printfn "Usage: <input file path> <output directory>"
+        1 // Exit with error
+    else
+        let inputFilePath = argv.[0]
+        let outputDir = argv.[1]
+        processFile inputFilePath outputDir
+        0
