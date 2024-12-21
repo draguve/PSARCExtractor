@@ -14,7 +14,7 @@ type Configuration =
       ConvertAudio: AudioConversionType option
     }
 
-let progress = fun () -> printfn "Progress"
+let progress = fun () -> ()
 
 let importPsarc config targetFolder (psarcPath: string)  =
     async {
@@ -69,9 +69,10 @@ let processFile filename outputDir =
        let directory = outputDir
        printfn $"%s{directory}"
        importPsarc config directory filename |> Async.RunSynchronously |> ignore
-       File.Delete(filename)
    with ex ->
-       printfn $"Problem could not decompress %s{filename}"
+        printfn $"Problem could not decompress %s{filename}"
+        printfn $"Exception: %s{ex.Message}"
+        printfn $"Stack Trace: %s{ex.StackTrace}"
 
 [<EntryPoint>]
 let main argv =
