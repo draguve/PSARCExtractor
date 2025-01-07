@@ -84,10 +84,10 @@ let filterFilesWithExtension extension = List.filter (String.endsWith extension)
 
 let processXblock outputDir (xblock:string) psarcContents (psarc:PSARC) platform =
     async {
+        printfn $"Processing {xblock}"
+        let dlcKey = Path.GetFileNameWithoutExtension(xblock)
+        let subDir = Path.Combine(outputDir, dlcKey)
         try
-            printfn $"Processing {xblock}"
-            let dlcKey = Path.GetFileNameWithoutExtension(xblock)
-            let subDir = Path.Combine(outputDir, dlcKey)
             Directory.CreateDirectory(subDir) |> ignore
             printfn $"DLC KEY {dlcKey}"
             let artFile = List.filter (String.endsWith "256.dds") psarcContents |> List.find (String.contains dlcKey)
@@ -253,28 +253,40 @@ let processXblock outputDir (xblock:string) psarcContents (psarc:PSARC) platform
             return 0
 
         with ex ->
+            if Directory.Exists(subDir) then
+                Directory.Delete(subDir, true)
             printfn $"Problem processXBlock {xblock}"
             return 1
         }
 
-let test filename outputDir =
+let multiSongs filename outputDir =
     Directory.CreateDirectory(outputDir) |> ignore
     let platform = Platform.PC
     use psarc = PSARC.ReadFile(filename)
     let psarcContents = psarc.Manifest
     let xblocks = filterFilesWithExtension "xblock" psarcContents
-    printList psarcContents
-    let ret = Async.RunSynchronously (processXblock outputDir xblocks[3] psarcContents psarc platform)
+    //printList psarcContents
+    //let ret = Async.RunSynchronously (processXblock outputDir xblocks[3] psarcContents psarc platform)
+    let processBlock xblock = Async.RunSynchronously (processXblock outputDir xblock psarcContents psarc platform)
+    let results = List.map processBlock xblocks
     0
 
 [<EntryPoint>]
 let main argv =
-    // Expecting two arguments: input file path and output directory
+    // Expecting two arguments: input file path and output directory, with an optional flag
     if argv.Length < 2 then
-        printfn "Usage: <input file path> <output directory>"
+        printfn "Usage: <input file path> <output directory> [--multi]"
         1 // Exit with error
     else
         let inputFilePath = argv.[0]
         let outputDir = argv.[1]
-        test inputFilePath outputDir
-        0
+
+        // Check for the presence of the flag
+        if argv.Length > 2 && argv.[2] = "--multi" then
+            let ret = multiSongs inputFilePath outputDir
+            ret |> ignore
+        else
+            let ret = processFile inputFilePath outputDir
+            ret |> ignore
+        0 // Exit code for successful execution
+
