@@ -10,11 +10,13 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,7 +52,6 @@
 
   <ItemGroup>
     <PackageReference Include="FSharp.SystemTextJson" Version="0.19.13" />
-    <PackageReference Include="Magick.NET-Q8-x64" Version="8.4.0" />
     <PackageReference Update="FSharp.Core" Version="6.0.6" />
   </ItemGroup>
 

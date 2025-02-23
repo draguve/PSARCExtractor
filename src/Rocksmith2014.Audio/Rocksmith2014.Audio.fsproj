@@ -12,7 +12,8 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(Windows))' ">win-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(Linux))' ">linux-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(OSX))' ">osx-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(OSX))' ">osx-arm64</RuntimeIdentifier>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -22,6 +23,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(RuntimeIdentifier)'=='win-x64'">
@@ -29,7 +31,7 @@
     <Content Include="Tools\win\revorb.exe" Link="Tools\revorb.exe" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(RuntimeIdentifier)'=='osx-x64'">
+  <ItemGroup Condition="'$(RuntimeIdentifier)'=='osx-arm64'">
     <Content Include="Tools\mac\ww2ogg" Link="Tools\ww2ogg" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Tools\mac\revorb" Link="Tools\revorb" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

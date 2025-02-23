@@ -20,11 +20,17 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="8.4.0" />
+  </ItemGroup>
 
 </Project>
